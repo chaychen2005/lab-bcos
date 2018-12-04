@@ -64,6 +64,8 @@ bytes CNSPrecompiled::call(ExecutiveContext::Ptr context, bytesConstRef param)
         // insert(name, version, address, abi), 4 fields in table, the key of table is name field
         std::string contractName, contractVersion, contractAddress, contractAbi;
         abi.abiOut(data, contractName, contractVersion, contractAddress, contractAbi);
+        STORAGE_LOG(DEBUG) << "CNS insert params:" << contractName << "," << contractVersion << ","
+                           << contractAddress << "," << contractAbi;
         Table::Ptr table = openTable(context, SYS_CNS);
 
         if (!table)
@@ -105,6 +107,7 @@ bytes CNSPrecompiled::call(ExecutiveContext::Ptr context, bytesConstRef param)
         entry->setField(SYS_CNS_FIELD_ABI, contractAbi);
         size_t count = table->insert(contractName, entry);
         out = abi.abiIn("", u256(count));
+        STORAGE_LOG(DEBUG) << "CNS insert result:" << toHex(out);
 
         break;
     }
@@ -114,6 +117,7 @@ bytes CNSPrecompiled::call(ExecutiveContext::Ptr context, bytesConstRef param)
         // Cursor is not considered.
         std::string contractName;
         abi.abiOut(data, contractName);
+        STORAGE_LOG(DEBUG) << "CNS selectByName params:" << contractName;
         Table::Ptr table = openTable(context, SYS_CNS);
         if (!table)
         {
@@ -145,6 +149,7 @@ bytes CNSPrecompiled::call(ExecutiveContext::Ptr context, bytesConstRef param)
         json_spirit::Value value(CNSInfos);
         std::string str = json_spirit::write_string(value, true);
         out = abi.abiIn("", str);
+        STORAGE_LOG(DEBUG) << "CNS selectByName result:" << toHex(out);
 
         break;
     }
@@ -153,6 +158,8 @@ bytes CNSPrecompiled::call(ExecutiveContext::Ptr context, bytesConstRef param)
         // selectByNameAndVersion(string,string) returns(string)
         std::string contractName, contractVersion;
         abi.abiOut(data, contractName, contractVersion);
+        STORAGE_LOG(DEBUG) << "CNS selectByNameAndVersion params:" << contractName << ","
+                           << contractVersion;
         Table::Ptr table = openTable(context, SYS_CNS);
         if (!table)
         {
@@ -189,6 +196,7 @@ bytes CNSPrecompiled::call(ExecutiveContext::Ptr context, bytesConstRef param)
         json_spirit::Value value(CNSInfos);
         std::string str = json_spirit::write_string(value, true);
         out = abi.abiIn("", str);
+        STORAGE_LOG(DEBUG) << "CNS selectByNameAndVersion result:" << toHex(out);
 
         break;
     }
