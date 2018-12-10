@@ -28,7 +28,8 @@ using namespace dev;
 using namespace dev::p2p;
 unsigned dev::p2p::c_defaultIPPort = 16789;
 bool dev::p2p::NodeIPEndpoint::test_allowLocal = false;
-
+std::string dev::p2p::g_P2PExceptionMsg[P2PExceptionType::ALL] = {"Success", "ProtocolError",
+    "NetworkTimeout", "Disconnect", "P2PError", "ConnectError", "DuplicateSession"};
 bool p2p::isPublicAddress(std::string const& _addressToCheck)
 {
     return _addressToCheck.empty() ? false :
