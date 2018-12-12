@@ -115,8 +115,6 @@ enum P2PExceptionType
     ALL,
 };
 
-extern std::string g_P2PExceptionMsg[ALL];
-
 enum PacketDecodeStatus
 {
     PACKET_ERROR = -1,
