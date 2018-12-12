@@ -2,8 +2,8 @@
 #include <libdevcore/Common.h>
 #include <libstorage/CNSPrecompiled.h>
 #include <libstorage/CRUDPrecompiled.h>
-#include <libstorage/MemoryTableFactory.h>
 #include <libstorage/ConsensusPrecompiled.h>
+#include <libstorage/MemoryTableFactory.h>
 #include <libstorage/TableFactoryPrecompiled.h>
 
 using namespace dev;

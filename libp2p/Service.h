@@ -95,11 +95,13 @@ public:
     }
     virtual void setGroupID2NodeList(std::map<GROUP_ID, h512s> _groupID2NodeList) override
     {
+        RecursiveMutex(x_nodeList);
         m_groupID2NodeList = _groupID2NodeList;
     }
 
     virtual void setNodeListByGroupID(GROUP_ID _groupID, dev::h512s _nodeList) override
     {
+        RecursiveMutex(x_nodeList);
         m_groupID2NodeList[_groupID] = _nodeList;
     }
 
