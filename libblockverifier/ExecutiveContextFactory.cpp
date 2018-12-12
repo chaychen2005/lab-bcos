@@ -3,7 +3,7 @@
 #include <libstorage/CNSPrecompiled.h>
 #include <libstorage/CRUDPrecompiled.h>
 #include <libstorage/MemoryTableFactory.h>
-#include <libstorage/MinerPrecompiled.h>
+#include <libstorage/ConsensusPrecompiled.h>
 #include <libstorage/TableFactoryPrecompiled.h>
 
 using namespace dev;
@@ -27,7 +27,7 @@ void ExecutiveContextFactory::initExecutiveContext(
     context->setAddress2Precompiled(
         Address(0x1002), std::make_shared<dev::blockverifier::CRUDPrecompiled>());
     context->setAddress2Precompiled(
-        Address(0x1003), std::make_shared<dev::blockverifier::MinerPrecompiled>());
+        Address(0x1003), std::make_shared<dev::blockverifier::ConsensusPrecompiled>());
     context->setMemoryTableFactory(memoryTableFactory);
     context->setAddress2Precompiled(
         Address(0x1004), std::make_shared<dev::blockverifier::CNSPrecompiled>());

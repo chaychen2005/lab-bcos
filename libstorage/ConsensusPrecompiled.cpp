@@ -51,6 +51,8 @@ bytes ConsensusPrecompiled::call(ExecutiveContext::Ptr context, bytesConstRef pa
     bytes out;
     u256 count = 0;
 
+    showConsensusTable(context);
+
     switch (func)
     {
     case 0x6b1b37c5:
@@ -58,7 +60,7 @@ bytes ConsensusPrecompiled::call(ExecutiveContext::Ptr context, bytesConstRef pa
         // addMiner(string)
         std::string nodeID;
         abi.abiOut(data, nodeID);
-        STORAGE_LOG(DEBUG) << "ConsensusPrecompiled addNode params:" << nodeID;
+        STORAGE_LOG(DEBUG) << "ConsensusPrecompiled addMiner params:" << nodeID;
         if (nodeID.size() != 128u)
         {
             STORAGE_LOG(DEBUG) << "ConsensusPrecompiled nodeID length error. " << nodeID;
@@ -112,7 +114,7 @@ bytes ConsensusPrecompiled::call(ExecutiveContext::Ptr context, bytesConstRef pa
         // addObserver(string)
         std::string nodeID;
         abi.abiOut(data, nodeID);
-        STORAGE_LOG(DEBUG) << "ConsensusPrecompiled addNode params:" << nodeID;
+        STORAGE_LOG(DEBUG) << "ConsensusPrecompiled addObserver params:" << nodeID;
         if (nodeID.size() != 128u)
         {
             STORAGE_LOG(DEBUG) << "ConsensusPrecompiled nodeID length error. " << nodeID;
@@ -200,4 +202,36 @@ bytes ConsensusPrecompiled::call(ExecutiveContext::Ptr context, bytesConstRef pa
     }
     }
     return out;
+}
+
+void ConsensusPrecompiled::showConsensusTable(ExecutiveContext::Ptr context)
+{
+    storage::Table::Ptr table = openTable(context, SYS_MINERS);
+    if (!table)
+    {
+        STORAGE_LOG(WARNING) << "ConsensusPrecompiled open SYS_MINERS table failed.";
+        return;
+    }
+
+    auto condition = table->newCondition();
+    auto entries = table->select(PRI_KEY, condition);
+
+    std::stringstream s;
+    s << "ConsensusPrecompiled show table:\n";
+    if (entries.get())
+    {
+        for (size_t i = 0; i < entries->size(); i++)
+        {
+            auto entry = entries->get(i);
+            if (!entry)
+                continue;
+            std::string name = entry->getField(PRI_COLUMN);
+            std::string nodeID = entry->getField(NODE_KEY_NODEID);
+            std::string type = entry->getField(NODE_TYPE);
+            std::string enable = entry->getField(NODE_KEY_ENABLENUM);
+            s << "ConsensusPrecompiled[" << i << "]:" << name << "," << nodeID << "," << type << ","
+              << enable << "\n";
+        }
+    }
+    STORAGE_LOG(TRACE) << s.str();
 }

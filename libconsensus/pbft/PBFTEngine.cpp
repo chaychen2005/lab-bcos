@@ -138,6 +138,8 @@ void PBFTEngine::resetConfig()
     }
     m_f = (m_nodeNum - 1) / 3;
     m_cfgErr = (m_idx == MAXIDX);
+
+    updateNodeListInP2P();
 }
 
 /// init pbftMsgBackup
@@ -1086,56 +1088,23 @@ void PBFTEngine::updateMinerList()
     try
     {
         UpgradableGuard l(m_minerListMutex);
-        auto miner_list = m_minerList;
-        int64_t curBlockNum = m_highestBlock.number();
-        /// get node from storage DB
-        auto nodes = m_storage->select(m_highestBlock.hash(), curBlockNum, "_sys_miners_", "node");
-        /// obtain miner list
-        if (!nodes)
-            return;
-        for (size_t i = 0; i < nodes->size(); i++)
-        {
-            auto node = nodes->get(i);
-            if (!node)
-                return;
-            if ((node->getField("type") == "miner") &&
-                (boost::lexical_cast<int>(node->getField("enable_num")) <= curBlockNum))
-            {
-                h512 nodeID = h512(node->getField("node_id"));
-                if (find(miner_list.begin(), miner_list.end(), nodeID) == miner_list.end())
-                {
-                    miner_list.push_back(nodeID);
-                    PBFTENGINE_LOG(INFO)
-                        << "[#updateMinerList] Add nodeID [nodeID/idx]: " << toHex(nodeID) << "/"
-                        << i << std::endl;
-                }
-            }
-        }
-        /// remove observe nodes
-        for (size_t i = 0; i < nodes->size(); i++)
-        {
-            auto node = nodes->get(i);
-            if (!node)
-                return;
-            if ((node->getField("type") == "observer") &&
-                (boost::lexical_cast<int>(node->getField("enable_num")) <= curBlockNum))
-            {
-                h512 nodeID = h512(node->getField("node_id"));
-                auto it = find(miner_list.begin(), miner_list.end(), nodeID);
-                if (it != miner_list.end())
-                {
-                    miner_list.erase(it);
-                    PBFTENGINE_LOG(INFO)
-                        << "[#updateMinerList] erase nodeID [nodeID/idx]:  " << toHex(nodeID) << "/"
-                        << i;
-                }
-            }
-        }
+        std::stringstream s1;
+        s1 << "[#updateMinerList] Before Miners:";
+        for (dev::h512 node : m_minerList)
+            s1 << toHex(node) << ",";
+        PBFTENGINE_LOG(TRACE) << s1.str();
+
         UpgradeGuard ul(l);
-        m_minerList = miner_list;
+        m_minerList = m_blockChain->minerList();
         /// to make sure the index of all miners are consistent
         std::sort(m_minerList.begin(), m_minerList.end());
         m_lastObtainMinerNum = m_highestBlock.number();
+
+        std::stringstream s2;
+        s2 << "[#updateMinerList] After Miners:";
+        for (dev::h512 node : m_minerList)
+            s2 << toHex(node) << ",";
+        PBFTENGINE_LOG(TRACE) << s2.str();
     }
     catch (std::exception& e)
     {

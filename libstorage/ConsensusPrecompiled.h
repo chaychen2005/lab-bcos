@@ -53,6 +53,9 @@ public:
     virtual ~ConsensusPrecompiled(){};
 
     virtual bytes call(ExecutiveContext::Ptr context, bytesConstRef param);
+
+private:
+    void showConsensusTable(ExecutiveContext::Ptr context);
 };
 
 }  // namespace blockverifier
