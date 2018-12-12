@@ -144,7 +144,7 @@ public:
 
     dev::h256 numberHash(int64_t x) const { return m_numberHash(x); }
 
-    std::shared_ptr<dev::blockverifier::ExecutiveContext> precompiledEngine();
+    std::shared_ptr<dev::blockverifier::ExecutiveContext> precompiledEngine() const;
 
     void setPrecompiledEngine(
         std::shared_ptr<dev::blockverifier::ExecutiveContext> executiveEngine);
@@ -212,7 +212,7 @@ public:
     virtual u256 balance(Address) { return 0; }
 
     /// Read address's code.
-    virtual bytes const& codeAt(Address) { return NullBytes; }
+    virtual bytes const codeAt(Address) { return NullBytes; }
 
     /// @returns the size of the code in bytes at the given address.
     virtual size_t codeSizeAt(Address) { return 0; }
@@ -278,7 +278,7 @@ public:
     void setCreate(bool _isCreate) { m_isCreate = _isCreate; }
     void setStaticCall(bool _staticCall) { m_staticCall = _staticCall; }
 
-private:
+protected:
     EnvInfo const& m_envInfo;
 
 private:

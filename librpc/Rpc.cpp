@@ -30,6 +30,7 @@
 #include <libethcore/CommonJS.h>
 #include <libethcore/Transaction.h>
 #include <libexecutive/ExecutionResult.h>
+#include <libstorage/MinerPrecompiled.h>
 #include <libsync/SyncStatus.h>
 #include <libtxpool/TxPoolInterface.h>
 #include <boost/algorithm/hex.hpp>
@@ -38,7 +39,7 @@
 using namespace jsonrpc;
 using namespace dev::rpc;
 using namespace dev::sync;
-
+using namespace dev::ledger;
 
 Rpc::Rpc(std::shared_ptr<dev::ledger::LedgerManager> _ledgerManager,
     std::shared_ptr<dev::p2p::P2PInterface> _service)
@@ -49,7 +50,7 @@ std::string Rpc::getBlockNumber(int _groupID)
 {
     try
     {
-        LOG(INFO) << "blockNumber # request = " << std::endl
+        LOG(INFO) << "getBlockNumber # request = " << std::endl
                   << "{ " << std::endl
                   << "\"_groupID\" : " << _groupID << std::endl
                   << "}";
@@ -77,7 +78,7 @@ std::string Rpc::getPbftView(int _groupID)
 {
     try
     {
-        LOG(INFO) << "pbftView # request = " << std::endl
+        LOG(INFO) << "getPbftView # request = " << std::endl
                   << "{ " << std::endl
                   << "\"_groupID\" : " << _groupID << std::endl
                   << "}";
@@ -109,11 +110,82 @@ std::string Rpc::getPbftView(int _groupID)
     }
 }
 
+Json::Value Rpc::getMinerList(int _groupID)
+{
+    try
+    {
+        LOG(INFO) << "getMinerList # request = " << std::endl
+                  << "{ " << std::endl
+                  << "\"_groupID\" : " << _groupID << std::endl
+                  << "}";
+
+        auto consensus = ledgerManager()->consensus(_groupID);
+        if (!consensus)
+            BOOST_THROW_EXCEPTION(
+                JsonRpcException(RPCExceptionType::GroupID, RPCMsg[RPCExceptionType::GroupID]));
+
+        auto miners = consensus->minerList();
+
+        Json::Value response = Json::Value(Json::arrayValue);
+        for (auto it = miners.begin(); it != miners.end(); ++it)
+        {
+            response.append((*it).hex());
+        }
+
+        return response;
+    }
+    catch (JsonRpcException& e)
+    {
+        throw e;
+    }
+    catch (std::exception& e)
+    {
+        BOOST_THROW_EXCEPTION(
+            JsonRpcException(Errors::ERROR_RPC_INTERNAL_ERROR, boost::diagnostic_information(e)));
+    }
+}
+
+Json::Value Rpc::getObserverList(int _groupID)
+{
+    try
+    {
+        LOG(INFO) << "getObserverList # request = " << std::endl
+                  << "{ " << std::endl
+                  << "\"_groupID\" : " << _groupID << std::endl
+                  << "}";
+
+        auto consensus = ledgerManager()->consensus(_groupID);
+        if (!consensus)
+            BOOST_THROW_EXCEPTION(
+                JsonRpcException(RPCExceptionType::GroupID, RPCMsg[RPCExceptionType::GroupID]));
+        auto miners = consensus->minerList();
+
+        auto _nodeList = service()->getNodeListByGroupID(_groupID);
+
+        Json::Value response = Json::Value(Json::arrayValue);
+        for (auto it = _nodeList.begin(); it != _nodeList.end(); ++it)
+        {
+            if (miners.end() == find(miners.begin(), miners.end(), *it))
+                response.append((*it).hex());
+        }
+
+        return response;
+    }
+    catch (JsonRpcException& e)
+    {
+        throw e;
+    }
+    catch (std::exception& e)
+    {
+        BOOST_THROW_EXCEPTION(
+            JsonRpcException(Errors::ERROR_RPC_INTERNAL_ERROR, boost::diagnostic_information(e)));
+    }
+}
 Json::Value Rpc::getConsensusStatus(int _groupID)
 {
     try
     {
-        LOG(INFO) << "consensusStatus # request = " << std::endl
+        LOG(INFO) << "getConsensusStatus # request = " << std::endl
                   << "{ " << std::endl
                   << "\"_groupID\" : " << _groupID << std::endl
                   << "}";
@@ -147,7 +219,7 @@ Json::Value Rpc::getSyncStatus(int _groupID)
 {
     try
     {
-        LOG(INFO) << "syncStatus # request = " << std::endl
+        LOG(INFO) << "getSyncStatus # request = " << std::endl
                   << "{ " << std::endl
                   << "\"_groupID\" : " << _groupID << std::endl
                   << "}";
@@ -214,7 +286,7 @@ Json::Value Rpc::getPeers()
         {
             Json::Value node;
             node["NodeID"] = it->nodeID.hex();
-            node["IP & Port"] = it->nodeIPEndpoint.name();
+            node["IPAndPort"] = it->nodeIPEndpoint.name();
             node["Topic"] = Json::Value(Json::arrayValue);
             for (std::string topic : it->topics)
                 node["Topic"].append(topic);
@@ -240,7 +312,7 @@ Json::Value Rpc::getGroupPeers(int _groupID)
 {
     try
     {
-        LOG(INFO) << "groupPeers # request = " << std::endl
+        LOG(INFO) << "getGroupPeers # request = " << std::endl
                   << "{ " << std::endl
                   << "\"_groupID\" : " << _groupID << std::endl
                   << "}";
@@ -421,7 +493,7 @@ std::string Rpc::getBlockHashByNumber(int _groupID, const std::string& _blockNum
 {
     try
     {
-        LOG(INFO) << "numberHash # request = " << std::endl
+        LOG(INFO) << "getBlockHashByNumber # request = " << std::endl
                   << "{ " << std::endl
                   << "\"_groupID\" : " << _groupID << "," << std::endl
                   << "\"_blockNumber\" : " << _blockNumber << std::endl
@@ -645,12 +717,15 @@ Json::Value Rpc::getTransactionReceipt(int _groupID, const std::string& _transac
         {
             Json::Value log;
             log["address"] = toJS(txReceipt.log()[i].address);
-            log["topics"] = toJS(txReceipt.log()[i].topics);
+            log["topics"] = Json::Value(Json::arrayValue);
+            for (unsigned int j = 0; j < txReceipt.log()[i].topics.size(); ++j)
+                log["topics"].append(toJS(txReceipt.log()[i].topics[j]));
             log["data"] = toJS(txReceipt.log()[i].data);
             response["logs"].append(log);
         }
         response["logsBloom"] = toJS(txReceipt.bloom());
         response["status"] = toJS(txReceipt.status());
+        response["output"] = toJS(txReceipt.outputBytes());
 
         return response;
     }
@@ -670,7 +745,7 @@ Json::Value Rpc::getPendingTransactions(int _groupID)
 {
     try
     {
-        LOG(INFO) << "pendingTransactions # request = " << std::endl
+        LOG(INFO) << "getPendingTransactions # request = " << std::endl
                   << "{ " << std::endl
                   << "\"_groupID\" : " << _groupID << std::endl
                   << "}";
@@ -744,7 +819,7 @@ Json::Value Rpc::getTotalTransactionCount(int _groupID)
 {
     try
     {
-        LOG(INFO) << "totalTransactionCount # request = " << std::endl
+        LOG(INFO) << "getTotalTransactionCount # request = " << std::endl
                   << "{ " << std::endl
                   << "\"_groupID\" : " << _groupID << std::endl
                   << "}";
@@ -780,6 +855,10 @@ Json::Value Rpc::call(int _groupID, const Json::Value& request)
                   << "\"_groupID\" : " << _groupID << "," << std::endl
                   << request.toStyledString() << "}";
 
+        if (request["from"].empty() || request["from"].asString().empty())
+            BOOST_THROW_EXCEPTION(
+                JsonRpcException(RPCExceptionType::CallFrom, RPCMsg[RPCExceptionType::CallFrom]));
+
         auto blockchain = ledgerManager()->blockChain(_groupID);
         auto blockverfier = ledgerManager()->blockVerifier(_groupID);
         if (!blockchain || !blockverfier)
@@ -802,7 +881,7 @@ Json::Value Rpc::call(int _groupID, const Json::Value& request)
 
         Json::Value response;
         response["currentBlockNumber"] = toJS(blockNumber);
-        response["output"] = toJS(executionResult.first.output);
+        response["output"] = toJS(executionResult.second.outputBytes());
         return response;
     }
     catch (JsonRpcException& e)

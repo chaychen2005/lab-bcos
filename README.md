@@ -1,19 +1,34 @@
 ![](docs/images/FISCO_BCOS_Logo.svg)
 
-**FISCO BCOS** is an open-sourced, cross-industry, collaborative, and secure blockchain platform. Two major camps of blockchain technology - public and consortium chains, to better serve the general public, open consortium chain is the perfect choice for enterprises to unlock the potential of collaborative businesses model. FISCO BCOS is born to support open consortium chain applications, by supporting multiple chains’, and cross-chain communication.
+**FISCO BCOS** is an open-sourced, cross-industry, collaborative, and secure blockchain platform. Two major camps of blockchain technology - public and consortium chains, to better serve the general public, open consortium chain is the perfect choice for enterprises to unlock the potential of collaborative businesses model. FISCO BCOS is born to support open consortium chain applications, by supporting multiple chains, and cross-chain communication.
+
+[![Build Status](https://travis-ci.org/FISCO-BCOS/lab-bcos.svg)](https://travis-ci.org/FISCO-BCOS/lab-bcos)  [![codecov](https://codecov.io/gh/FISCO-BCOS/lab-bcos/branch/master/graph/badge.svg)](https://codecov.io/gh/FISCO-BCOS/lab-bcos) [![](https://img.shields.io/github/issues-pr/FISCO-BCOS/lab-bcos.svg)](https://github.com/FISCO-BCOS/lab-bcos/pulls) [![GitHub issues](https://img.shields.io/github/issues/FISCO-BCOS/lab-bcos.svg)](https://github.com/FISCO-BCOS/lab-bcos/issues) [![GitHub All Releases](https://img.shields.io/github/downloads/FISCO-BCOS/lab-bcos/total.svg)](https://github.com/FISCO-BCOS/lab-bcos) 
 
 ## Getting Started
 
+### Build a blockchain
 
-[![GitHub forks](https://img.shields.io/github/forks/FISCO-BCOS/lab-bcos.svg)](https://github.com/FISCO-BCOS/lab-bcos/network) [![GitHub All Releases](https://img.shields.io/github/downloads/FISCO-BCOS/lab-bcos/total.svg)](https://github.com/FISCO-BCOS/lab-bcos) 
+Run [`build_chain.sh`](tools/build_chain.sh) to generate a blockchain with some nodes. For example, we build a blockchain with 4 nodes belongs to `127.0.0.1`.
 
-* Install FISCO BCOS
-* Build a blockchain
-* Deploy a smart contract
+```bash
+curl -LO https://raw.githubusercontent.com/FISCO-BCOS/lab-bcos/dev/tools/build_chain.sh
+bash build_chain.sh -l "127.0.0.1:4"
+```
+
+After that, we start up all nodes. And the blockchain is running!
+
+```bash
+cd ./nodes
+bash start_all.sh
+```
+
+More senarios, read XXX.
+
+### Deploy a smart contract
+
+Read XXX to deploy your smart contracts and use them.
 
 ## Developing & Contributing
-
-[![GitHub top language](https://img.shields.io/github/languages/top/FISCO-BCOS/lab-bcos.svg)](https://github.com/FISCO-BCOS/lab-bcos) [![Build Status](https://travis-ci.org/FISCO-BCOS/lab-bcos.svg)](https://travis-ci.org/FISCO-BCOS/lab-bcos)  [![codecov](https://codecov.io/gh/FISCO-BCOS/lab-bcos/branch/master/graph/badge.svg)](https://codecov.io/gh/FISCO-BCOS/lab-bcos) [![](https://img.shields.io/github/issues-pr/FISCO-BCOS/lab-bcos.svg)](https://github.com/FISCO-BCOS/lab-bcos/pulls)  [![GitHub issues](https://img.shields.io/github/issues/FISCO-BCOS/lab-bcos.svg)](https://github.com/FISCO-BCOS/lab-bcos/issues)
 
 * Star our Github. 
 * Pull requests. See [CONTRIBUTING](CONTRIBUTING.md) and [CODING_STYLE](CODING_STYLE.md).
@@ -39,9 +54,17 @@ Since launched, dozens of use cases have been implemented based on the FISCO BCO
 
 ## Community
 
+Financial Blockchain Shenzhen Consortium (FISCO) has attracted more than 100 members including financial institutions and financial information service companies so far. The first members include the following organizations: Beyondsoft, Huawei, Shenzheng, Shenzhou Digital, Forms Syntron, Tencent, WeBank, Yuexiu Jinke.
+
 - Join our WeChat [![Scan](https://img.shields.io/badge/style-Scan_QR_Code-green.svg?logo=wechat&longCache=false&style=social&label=Group)](docs/images/WeChatQR.jpeg) 
-- Discuss in ![Gitter](https://img.shields.io/badge/style-on_gitter-green.svg?logo=gitter&longCache=false&style=social&label=Chat)](https://gitter.im/fisco-bcos/Lobby) 
+
+
+- Discuss in [![Gitter](https://img.shields.io/badge/style-on_gitter-green.svg?logo=gitter&longCache=false&style=social&label=Chat)](https://gitter.im/fisco-bcos/Lobby) 
+
+
 - Read news by [![](https://img.shields.io/twitter/url/http/shields.io.svg?style=social&label=Follow@FiscoBcos)](https://twitter.com/FiscoBcos)
+
+
 - Mail us at [![](https://img.shields.io/twitter/url/http/shields.io.svg?logo=Gmail&style=social&label=service@fisco.com.cn)](mailto:service@fisco.com.cn)
 
 

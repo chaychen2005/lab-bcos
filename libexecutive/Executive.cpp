@@ -134,6 +134,8 @@ bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address co
     }
 
     m_savepoint = m_s->savepoint();
+    m_memoryTableFactorySavePoint =
+        m_envInfo.precompiledEngine()->getMemoryTableFactory()->savepoint();
     if (m_envInfo.precompiledEngine() &&
         m_envInfo.precompiledEngine()->isOrginPrecompiled(_p.codeAddress))
     {
@@ -205,6 +207,8 @@ bool Executive::executeCreate(Address const& _sender, u256 const& _endowment, u2
     m_s->incNonce(_sender);
 
     m_savepoint = m_s->savepoint();
+    m_memoryTableFactorySavePoint =
+        m_envInfo.precompiledEngine()->getMemoryTableFactory()->savepoint();
 
     m_isCreation = true;
 
@@ -353,14 +357,6 @@ bool Executive::finalize()
     m_refunded = m_ext ? min((m_t.gas() - m_gas) / 2, m_ext->sub().refunds) : 0;
     m_gas += m_refunded;
 
-    if (m_t)
-    {
-        m_s->addBalance(m_t.sender(), m_gas * m_t.gasPrice());
-
-        u256 feesEarned = (m_t.gas() - m_gas) * m_t.gasPrice();
-        // m_s.addBalance(m_envInfo.author(), feesEarned);
-    }
-
     // Suicides...
     if (m_ext)
         for (auto a : m_ext->sub().suicides)
@@ -388,4 +384,6 @@ void Executive::revert()
     // Set result address to the null one.
     m_newAddress = {};
     m_s->rollback(m_savepoint);
+    auto memoryTableFactory = m_envInfo.precompiledEngine()->getMemoryTableFactory();
+    memoryTableFactory->rollback(m_savepoint);
 }

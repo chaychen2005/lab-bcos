@@ -100,9 +100,17 @@ void Sealer::doWork(bool wait)
             uint64_t tx_num = m_sealing.block.getTransactionSize();
             /// obtain the transaction num should be packed
             uint64_t max_blockCanSeal = calculateMaxPackTxNum();
+            if (m_txPool->status().current > 0)
+            {
+                m_syncTxPool = true;
+                m_signalled.notify_all();
+                m_blockSignalled.notify_all();
+            }
+            else
+                m_syncTxPool = false;
             bool t = true;
             /// load transaction from transaction queue
-            if (m_syncTxPool.compare_exchange_strong(t, false) && !reachBlockIntervalTime())
+            if (m_syncTxPool == true && !reachBlockIntervalTime())
                 loadTransactions(max_blockCanSeal - tx_num);
             /// check enough or reach block interval
             if (!checkTxsEnough(max_blockCanSeal))
@@ -117,8 +125,8 @@ void Sealer::doWork(bool wait)
     }
     if (shouldWait(wait))
     {
-        std::unique_lock<std::mutex> l(x_signalled);
-        m_signalled.wait_for(l, std::chrono::milliseconds(10));
+        std::unique_lock<std::mutex> l(x_blocksignalled);
+        m_blockSignalled.wait_for(l, std::chrono::milliseconds(10));
     }
 }
 
@@ -131,10 +139,6 @@ void Sealer::loadTransactions(uint64_t const& transToFetch)
     /// fetch transactions and update m_transactionSet
     m_sealing.block.appendTransactions(
         m_txPool->topTransactions(transToFetch, m_sealing.m_transactionSet, true));
-    if (m_txPool->status().current > 0)
-        m_syncTxPool = true;
-    else
-        m_syncTxPool = false;
 }
 
 /// check whether the blocksync module is syncing
@@ -178,7 +182,8 @@ void Sealer::stop()
     SEAL_LOG(INFO) << "[#Stop sealer module...]" << std::endl;
     m_startConsensus = false;
     doneWorking();
-    stopWorking();
+    if (isWorking())
+        stopWorking();
 }
 }  // namespace consensus
 }  // namespace dev

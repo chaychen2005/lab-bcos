@@ -52,6 +52,16 @@ bool CommonTransactionNonceCheck::isNonceOk(dev::eth::Transaction const& _trans,
     return false;
 }
 
+void CommonTransactionNonceCheck::delCache(std::string const& key)
+{
+    DEV_WRITE_GUARDED(m_lock)
+    {
+        auto iter = m_cache.find(key);
+        if (iter != m_cache.end())
+            m_cache.erase(iter);
+    }
+}
+
 void CommonTransactionNonceCheck::delCache(Transactions const& _transcations)
 {
     DEV_WRITE_GUARDED(m_lock)

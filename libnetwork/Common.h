@@ -57,6 +57,8 @@ namespace bi = boost::asio::ip;
 #define SESSION_LOG(LEVEL) LOG(LEVEL) << "[#LIBP2P][#SESSION] "
 #define P2PMSG_LOG(LEVEL) LOG(LEVEL) << "[#LIBP2P][#P2PMSG] "
 #define NETWORK_LOG(LEVEL) LOG(LEVEL) << "[#LIBP2P][#NETWORK] "
+#define SERVICE_LOG(LEVEL) LOG(LEVEL) << "[#LIBP2P][#SERVICE] "
+
 namespace dev
 {
 namespace p2p
@@ -113,9 +115,6 @@ enum P2PExceptionType
     ALL,
 };
 
-static std::string g_P2PExceptionMsg[ALL] = {"Success", "ProtocolError", "NetworkTimeout",
-    "Disconnect", "P2PError", "ConnectError", "DuplicateSession"};
-
 enum PacketDecodeStatus
 {
     PACKET_ERROR = -1,
@@ -138,6 +137,8 @@ public:
 
     virtual uint32_t length() = 0;
     virtual uint32_t seq() = 0;
+
+    virtual bool isRequestPacket() = 0;
 
     virtual void encode(bytes& buffer) = 0;
     virtual ssize_t decode(const byte* buffer, size_t size) = 0;
@@ -204,17 +205,36 @@ struct NodeIPEndpoint
     }
     bool operator==(NodeIPEndpoint const& _cmp) const
     {
-        return address == _cmp.address && udpPort == _cmp.udpPort && tcpPort == _cmp.tcpPort;
+        if (address == _cmp.address && tcpPort == _cmp.tcpPort)
+            return true;
+        if (udpPort == _cmp.udpPort)
+            return true;
+        if (host == _cmp.host)
+            return true;
+        return false;
     }
     bool operator!=(NodeIPEndpoint const& _cmp) const { return !operator==(_cmp); }
     bool operator<(const dev::p2p::NodeIPEndpoint& rhs) const
     {
-        if (address < rhs.address)
+        if (address < rhs.address && tcpPort < rhs.tcpPort)
         {
             return true;
         }
-
-        return tcpPort < rhs.tcpPort;
+        if (udpPort < rhs.udpPort)
+            return true;
+        if (host < rhs.host)
+            return true;
+        return false;
+    }
+    bool operator>(const dev::p2p::NodeIPEndpoint& rhs) const
+    {
+        if (address > rhs.address && tcpPort > rhs.tcpPort)
+            return true;
+        if (udpPort > rhs.udpPort)
+            return true;
+        if (host > rhs.host)
+            return true;
+        return false;
     }
     std::string name() const
     {
