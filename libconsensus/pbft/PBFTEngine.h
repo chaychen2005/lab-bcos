@@ -453,6 +453,9 @@ protected:
 
     /// the block number that update the miner list
     int64_t m_lastObtainMinerNum = 0;
+
+    /// node list record when P2P last update
+    std::string m_lastNodeList;
 };
 }  // namespace consensus
 }  // namespace dev

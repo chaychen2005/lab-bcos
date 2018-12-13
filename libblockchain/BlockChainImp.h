@@ -95,8 +95,8 @@ private:
     mutable SharedMutex m_nodeListMutex;
     dev::h512s m_minerList;
     dev::h512s m_observerList;
-    int64_t cacheNumByMiner = -1;
-    int64_t cacheNumByObserver = -1;
+    int64_t m_cacheNumByMiner = -1;
+    int64_t m_cacheNumByObserver = -1;
 };
 }  // namespace blockchain
 }  // namespace dev

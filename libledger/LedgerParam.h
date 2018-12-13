@@ -61,6 +61,7 @@ struct SyncParam
 struct GenesisParam
 {
     std::string genesisMark;
+    std::string nodeListMark;
 };
 struct StorageParam
 {

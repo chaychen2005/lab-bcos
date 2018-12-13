@@ -274,14 +274,14 @@ dev::h512s BlockChainImp::minerList()
 {
     int64_t num = number();
     UpgradableGuard l(m_nodeListMutex);
-    if (cacheNumByMiner == num)
+    if (m_cacheNumByMiner == num)
     {
         LOG(INFO) << "BlockChainImp::minerList by cache, size:" << m_minerList.size();
         return m_minerList;
     }
     dev::h512s list = getNodeListByType(num, blockverifier::NODE_TYPE_MINER);
     UpgradeGuard ul(l);
-    cacheNumByMiner = num;
+    m_cacheNumByMiner = num;
     m_minerList = list;
 
     return list;
@@ -291,14 +291,14 @@ dev::h512s BlockChainImp::observerList()
 {
     int64_t num = number();
     UpgradableGuard l(m_nodeListMutex);
-    if (cacheNumByObserver == num)
+    if (m_cacheNumByObserver == num)
     {
         LOG(INFO) << "BlockChainImp::observerList by cache, size:" << m_observerList.size();
         return m_observerList;
     }
     dev::h512s list = getNodeListByType(num, blockverifier::NODE_TYPE_OBSERVER);
     UpgradeGuard ul(l);
-    cacheNumByObserver = num;
+    m_cacheNumByObserver = num;
     m_observerList = list;
 
     return list;

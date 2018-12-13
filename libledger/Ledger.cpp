@@ -139,6 +139,8 @@ void Ledger::initConsensusConfig(ptree const& pt)
     Ledger_LOG(DEBUG) << "[#initConsensusConfig] [type/maxTxNum]:  "
                       << m_param->mutableConsensusParam().consensusType << "/"
                       << m_param->mutableConsensusParam().maxTransactions << std::endl;
+
+    std::string nodeListMark = ",nodeList:";
     try
     {
         for (auto it : pt.get_child("consensus"))
@@ -168,6 +170,8 @@ void Ledger::initConsensusConfig(ptree const& pt)
                     Ledger_LOG(ERROR) << "[#initConsensusConfig] parse node faield";
                     continue;
                 }
+
+                nodeListMark += data;
             }
         }
     }
@@ -176,6 +180,7 @@ void Ledger::initConsensusConfig(ptree const& pt)
         Ledger_LOG(ERROR) << "[#initConsensusConfig]: Parse consensus section failed: "
                           << boost::diagnostic_information(e) << std::endl;
     }
+    m_param->mutableGenesisParam().nodeListMark = nodeListMark;
 }
 
 /// init sync related configurations
@@ -211,7 +216,8 @@ void Ledger::initDBConfig(ptree const& pt)
 void Ledger::initGenesisConfig(ptree const& pt)
 {
     m_param->mutableGenesisParam().genesisMark =
-        pt.get<std::string>("genesis.mark", std::to_string(m_groupId));
+        pt.get<std::string>("genesis.mark", std::to_string(m_groupId)) +
+        m_param->mutableGenesisParam().nodeListMark;
     Ledger_LOG(DEBUG) << "[#initGenesisConfig] [genesisMark]:  "
                       << m_param->mutableGenesisParam().genesisMark << std::endl;
 }

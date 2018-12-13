@@ -138,8 +138,6 @@ void PBFTEngine::resetConfig()
     }
     m_f = (m_nodeNum - 1) / 3;
     m_cfgErr = (m_idx == MAXIDX);
-
-    updateNodeListInP2P();
 }
 
 /// init pbftMsgBackup
@@ -1101,10 +1099,19 @@ void PBFTEngine::updateMinerList()
         m_lastObtainMinerNum = m_highestBlock.number();
 
         std::stringstream s2;
-        s2 << "[#updateMinerList] After Miners:";
+        s2 << "[#updateMinerList] Miners:";
         for (dev::h512 node : m_minerList)
             s2 << toHex(node) << ",";
+        s2 << "Observers:";
+        for (dev::h512 node : m_observerList)
+            s2 << toHex(node) << ",";
         PBFTENGINE_LOG(TRACE) << s2.str();
+
+        if (m_lastNodeList != s2.str())
+        {
+            updateNodeListInP2P();
+            m_lastNodeList = s2.str();
+        }
     }
     catch (std::exception& e)
     {
