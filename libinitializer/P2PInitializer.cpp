@@ -23,6 +23,8 @@
 #include "P2PInitializer.h"
 #include <libdevcore/easylog.h>
 #include <libnetwork/Host.h>
+#include <boost/algorithm/algorithm.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 
@@ -80,6 +82,22 @@ void P2PInitializer::initConfig(boost::property_tree::ptree const& _pt)
                 }
             }
         }
+        std::vector<std::string> crl;
+        /// CRL means certificate rejected list, CRL optional in config.ini
+        if (_pt.get_child_optional("CRL"))
+        {
+            for (auto it : _pt.get_child("CRL"))
+            {
+                if (it.first.find("node.") == 0)
+                {
+                    std::string nodeID = boost::to_upper_copy(it.second.data());
+                    SESSION_LOG(TRACE)
+                        << "[#P2PInitializer::initConfig] get certificate rejected by nodeID: "
+                        << nodeID;
+                    crl.push_back(nodeID);
+                }
+            }
+        }
 
         auto asioInterface = std::make_shared<ASIOInterface>();
         asioInterface->setIOService(std::make_shared<ba::io_service>());
@@ -93,6 +111,7 @@ void P2PInitializer::initConfig(boost::property_tree::ptree const& _pt)
         host->setMessageFactory(messageFactory);
         host->setHostPort(listenIP, listenPort);
         host->setThreadPool(std::make_shared<ThreadPool>("P2P", 4));
+        host->setCRL(crl);
 
         m_p2pService = std::make_shared<Service>();
         m_p2pService->setHost(host);
@@ -100,14 +119,6 @@ void P2PInitializer::initConfig(boost::property_tree::ptree const& _pt)
         m_p2pService->setKeyPair(m_keyPair);
         m_p2pService->setP2PMessageFactory(messageFactory);
 
-        m_p2pService->start();
-    }
-    catch (std::exception& e)
-    {
         INITIALIZER_LOG(ERROR) << "[#P2PInitializer] initConfig for P2PInitializer failed [EINFO]: "
                                << boost::diagnostic_information(e);
         ERROR_OUTPUT << "[#P2PInitializer] P2PInitializer failed, EINFO:"
-                     << boost::diagnostic_information(e) << std::endl;
-        exit(1);
-    }
-}
