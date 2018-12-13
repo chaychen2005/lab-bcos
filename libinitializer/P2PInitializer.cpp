@@ -82,6 +82,7 @@ void P2PInitializer::initConfig(boost::property_tree::ptree const& _pt)
                 }
             }
         }
+
         std::vector<std::string> crl;
         /// CRL means certificate rejected list, CRL optional in config.ini
         if (_pt.get_child_optional("CRL"))
@@ -119,6 +120,14 @@ void P2PInitializer::initConfig(boost::property_tree::ptree const& _pt)
         m_p2pService->setKeyPair(m_keyPair);
         m_p2pService->setP2PMessageFactory(messageFactory);
 
+        m_p2pService->start();
+    }
+    catch (std::exception& e)
+    {
         INITIALIZER_LOG(ERROR) << "[#P2PInitializer] initConfig for P2PInitializer failed [EINFO]: "
                                << boost::diagnostic_information(e);
         ERROR_OUTPUT << "[#P2PInitializer] P2PInitializer failed, EINFO:"
+                     << boost::diagnostic_information(e) << std::endl;
+        exit(1);
+    }
+}
